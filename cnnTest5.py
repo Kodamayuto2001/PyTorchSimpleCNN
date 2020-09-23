@@ -127,11 +127,11 @@ class MyDataLoader:
         --numWorkers = the number of tagNames
     """
 
-    def __init__(self, trainRootDir, testRootDir, imgSize, batchSize):
+    def __init__(self, trainRootDir, testRootDir, imgSize, batchSize,num_workers):
         # self.__my_collate_fn(batch=batchSize)
         self.__dataSet(trainRootDir=trainRootDir, testRootDir=testRootDir,
                        imgSize=imgSize)
-        self.__dataLoader(batchSize=batchSize)
+        self.__dataLoader(batchSize=batchSize,num_workers=num_workers)
         pass
 
     def __my_collate_fn(self, batch):
@@ -139,18 +139,18 @@ class MyDataLoader:
 
     def __dataSet(self, trainRootDir, testRootDir, imgSize):
         self.trainData = torchvision.datasets.ImageFolder(root=trainRootDir,
-                                                          transform=transforms.Compose([transforms.Grayscale(),transforms.Resize((imgSize,imgSize)),transforms.ToTensor(),transforms.Normalize(0.5,0.5),]))
+                                                          transform=transforms.Compose([transforms.Grayscale(),transforms.Resize((imgSize,imgSize)),transforms.ToTensor(),transforms.Normalize((0.5,), (0.5,)),]))
         self.testData = torchvision.datasets.ImageFolder(root=testRootDir,
-                                                         transform=transforms.Compose([transforms.Grayscale(),transforms.Resize((imgSize,imgSize)),transforms.ToTensor(),transforms.Normalize(0.5,0.5),]))
+                                                         transform=transforms.Compose([transforms.Grayscale(),transforms.Resize((imgSize,imgSize)),transforms.ToTensor(),transforms.Normalize((0.5,), (0.5,)),]))
         pass
 
-    def __dataLoader(self, batchSize):
+    def __dataLoader(self, batchSize,num_workers):
         self.trainDataLoaders = torch.utils.data.DataLoader(self.trainData,
                                                             batch_size=1,
-                                                            shuffle=True)
+                                                            shuffle=True,num_workers=num_workers)
         self.testDataLoaders = torch.utils.data.DataLoader(self.testData,
                                                            batch_size=1,
-                                                           shuffle=True)
+                                                           shuffle=True,num_workers=num_workers)
         pass
 
     def imshow(self):
@@ -246,7 +246,9 @@ if __name__ == "__main__":
     net: torch.nn.Module = Net(num=int(num))
 
     #データローダーを取得
-    mDataLoader = MyDataLoader(trainRootDir="Resources/train/",testRootDir="Resources/test/",imgSize=28,batchSize=1)
+    #DataLoaderのnum_workers(CPUのコア数)を設定する
+    num_workers = os.cpu_count()
+    mDataLoader = MyDataLoader(trainRootDir="Resources/train/",testRootDir="Resources/test/",imgSize=28,batchSize=1,num_workers=num_workers)
     #mDataLoader.imshow()
     print(mDataLoader.trainData)
 
@@ -261,8 +263,8 @@ if __name__ == "__main__":
             inputs,label = data 
             #print(i)
             #print(inputs[0][0][0][0])
-            #print(len(inputs[0][0][0]))
-            #print(len(inputs[0][0]))
+            print(len(inputs[0][0][0]))
+            print(len(inputs[0][0]))
             #print(inputs.size())
             #torch.Size([1, 1, 28, 28])
             print(label)
